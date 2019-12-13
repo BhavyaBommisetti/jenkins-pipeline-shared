@@ -1,27 +1,29 @@
-import jenkins.model.Jenkins
-import hudson.model.Job
-import hudson.model.FreeStyleProject
-import org.jenkinsci.plugins.workflow.job.WorkflowJob
+import jenkins.model.*
+import hudson.model.*
+import com.cloudbees.hudson.plugins.folder.*
+import jenkins.branch.*
+import org.jenkinsci.plugins.workflow.job.*
+import org.jenkinsci.plugins.workflow.multibranch.*
 
 //Inputs:
-def call(body)
-{
+def deleteOldBuilds(item, Integer numberOfBuildsToKeep, Integer numberOfSuccessfulBuildsKept) {
+    def count = 1
 
-//If dryRun is true, will print list of jobs that would be included in the deletion
-def dryRun = true
+    println('Checking for Old Builds...')
 
-//Copy one of these Job Types available for deletion: FreeStyleProject, WorkflowJob
-def jobDeleteType = FreeStyleProject
-
-
-//Script:
-Jenkins.instance.getAllItems(Job.class)
-        .findAll { Job job -> (job in jobDeleteType) }
-        .each { Job job ->
-            def jobName = "${jobDeleteType} Job Name: ${job.fullName}"
-            
-                job.delete()
-                println "${jobName} has been removed."
+    for (build in item.getBuilds()) {
+        if(count++ >= numberOfBuildsToKeep) {
+            if(item.getBuildStatusIconClassName() == 'icon-blue' && numberOfSuccessfulBuildsKept == 0) {
+                println('Keep ' + build)
+            } else {
+                println('Deleting ' + build)
+                build.delete()
+            }
+        } else if(item.getBuildStatusIconClassName() == 'icon-blue') {
+            numberOfSuccessfulBuildsKept++
         }
-return
+    }
+    println('PRIOR BUILD COUNT: (' + count + ')')
+    println ''
 }
+
