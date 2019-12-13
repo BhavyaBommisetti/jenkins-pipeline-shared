@@ -1,20 +1,26 @@
-import jenkins.model.Jenkins
-import hudson.model.Job
+import jenkins.model.*
+import hudson.model.*
+import com.cloudbees.hudson.plugins.folder.*
+import jenkins.branch.*
+import org.jenkinsci.plugins.workflow.job.*
+import org.jenkinsci.plugins.workflow.multibranch.*
+    def deleteOldBuilds(item, Integer numberOfBuildsToKeep, Integer numberOfSuccessfulBuildsKept) {
+    def count = 1
 
-int MAX_BUILDS = 5 // max builds to keep
+    println('Checking for Old Builds...')
 
-Jenkins.instance.getAllItems(Job.class).each { job ->
-
-    job.builds.drop(MAX_BUILDS).findAll {
-
-        !it.keepLog &&
-        !it.building &&
-        it != job.lastStableBuild &&
-        it != job.lastSuccessfulBuild &&
-        it != job.lastUnstableBuild &&
-        it != job.lastUnsuccessfulBuild
-
-    }.each { build ->
-        build.delete()
+    for (build in item.getBuilds()) {
+        if(count++ >= numberOfBuildsToKeep) {
+            if(item.getBuildStatusIconClassName() == 'icon-blue' && numberOfSuccessfulBuildsKept == 0) {
+                println('Keep ' + build)
+            } else {
+                println('Deleting ' + build)
+                build.delete()
+            }
+        } else if(item.getBuildStatusIconClassName() == 'icon-blue') {
+            numberOfSuccessfulBuildsKept++
+        }
     }
+    println('PRIOR BUILD COUNT: (' + count + ')')
+    println ''
 }
