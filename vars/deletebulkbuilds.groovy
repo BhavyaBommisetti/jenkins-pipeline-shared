@@ -4,7 +4,7 @@ import com.cloudbees.hudson.plugins.folder.*
 import jenkins.branch.*
 import org.jenkinsci.plugins.workflow.job.*
 import org.jenkinsci.plugins.workflow.multibranch.*
-    def deleteOldBuilds(item, Integer numberOfBuildsToKeep, Integer numberOfSuccessfulBuildsKept) {
+    def DeleteOldBuilds(item, Integer numberOfBuildsToKeep, Integer numberOfSuccessfulBuildsKept) {
     def count = 1
 
     println('Checking for Old Builds...')
